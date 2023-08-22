@@ -1,6 +1,10 @@
 from django.contrib import admin
-from .models import ChatMessage, Connection, Profile
+from .models import ChatMessage, Connection, Profile, Chat
 # Register your models here.
+
+@admin.register(Chat)
+class ChatAdmin(admin.ModelAdmin):
+    fields = ["members"]
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):

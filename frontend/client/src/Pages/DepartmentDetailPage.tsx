@@ -16,13 +16,12 @@ export const DepartmentDetail = () =>{
     const [department, setDepartment] = useState({} as IDepartment);
     const [users, setUsers] = useState([] as IUser[]);
     const {id} = useParams();
-    const {getDepartment, getUsersByDeptId, getAllClientRequest, getReceivedRequests, getSentRequests} = useContext(AppContext);
+    const {getDepartment, getUsersByDeptId, getAllClientRequest, getReceivedRequests, getSentRequests, currentUser} = useContext(AppContext);
 
     const [clientRequestList, setClientRequestList] = useState([] as IRequestClient[]);
     const [deptRequestReceived, setDeptRequestReceived] = useState([] as IRequest[]);
     const [deptRequestSent, setDeptRequestSent] = useState([] as IRequest[]);
     const [showCRList, setShowCRList] = useState(false);
-   // const [reqReceivedList, setReqReceivedList] = useState([] as IRequest[]);
     const [showReceveivedReqList, setShowReceivedReqList] = useState(false);
     const [showSentReqList, setShowSentList] = useState(false);
 
@@ -79,48 +78,42 @@ export const DepartmentDetail = () =>{
         getSentRequests(dep_id).then(resp => setDeptRequestSent(resp));
     })
     //console.log(deptRequestSent);
-    console.log(department)
+    console.log(currentUser)
 
     return(
         <div>
-            {id}
-            <DepartmentComp {...department}/>
+           <div className="department-header ">
+             <h2>{department?.department_name} deparment</h2>
+             <h6>Welcome {currentUser?.username}!!!!</h6>
+           </div>
 
-            <div className="mt-4 mb-4 border">
-                {users.map(u =>
-                    <div>
-                        <h3>{u.username}</h3>
-                        <p>{u.email}</p>
-                    </div>
-                    
-                )}
-            </div>
+           <h3 className="request-header-text">Check department requests</h3>
 
             <div className="requests-content-container">
-                <div className="request-container border">
-                    <div className="client-request-header">CLIENT REQUEST</div>
-                    <div>
-                        <button value={"sales"} onClick={handleClientRequestClick}>new</button>
+                <div className="request-container">
+                    <div className="client-request-header">CLIENT REQUESTS</div>
+                    <div className="request-button-container bg-dark">
+                        <button value={"sales"} onClick={handleClientRequestClick} className="btn btn-dark">show</button>
                     </div>
                     {showCRList?<ClientRequestList list={clientRequestList} dept_name={department.department_name}/>:""}
                 </div>
 
-                <div className="request-container border">
+                <div className="request-container">
                     <div className="client-request-header">RECEIVED REQUESTS</div>
-                    <div>
-                        <p><button value={"sales"} onClick={handleReceivedRequestClick} className="btn btn-primary">all requests</button>
-                        <Link to={`/departments/${department.id}/request/new`} className="btn btn-success">+ add request</Link></p>
+                    <div className="request-button-container bg-dark">
+                        <button onClick={handleReceivedRequestClick} className="btn btn-dark">show</button>
+                        <button className="btn btn-light btn-request btn-link"><Link to={`/departments/${department.id}/request/new`} className="link">+ add request</Link></button>
                     </div>
-                    
+                     
                    
                     {showReceveivedReqList?<ReceivedRequestList list={deptRequestReceived} dept_name={department.department_name}/> :""}
                 </div>
 
-                <div>
+                <div className="request-container">
                     <div className="client-request-header">SENT REQUESTS</div>
-                    <div>
-                        <p><button value={"sales"} onClick={handleSentRequestList} className="btn btn-primary">all requests</button>
-                        <Link to={`/departments/${department.id}/request/new`} className="btn btn-success">+ add request</Link></p>
+                    <div className="request-button-container bg-dark">
+                        <button value={"sales"} onClick={handleSentRequestList} className="btn btn-dark">show</button>
+                        <button className="btn btn-light btn-request btn-link"><Link to={`/departments/${department.id}/request/new`} className="link">+ add request</Link></button>
                     </div>
                     {showSentReqList?<SentRequestList list={deptRequestSent} dept_name={department.department_name}/>: ""}
                 </div>

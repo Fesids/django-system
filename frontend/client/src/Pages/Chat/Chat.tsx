@@ -2,27 +2,42 @@ import { useContext, useEffect, useState } from "react"
 import { IProfile } from "../../Interfaces/Profile"
 import { AppContext } from "../../Context/AppContext";
 import { IConnection } from "../../Interfaces/Connection";
-import { Conversation } from "../../Components/Conversation";
+import { Chat, Conversation } from "../../Components/Conversation";
+import { IUser } from "../../Interfaces/User";
+import { IChat } from "../../Interfaces/Chat";
+import { Link } from "react-router-dom";
 
 export const ChatPage = () =>{
 
     const [profileUser, setProfileUser] = useState({} as IProfile);
-    const [connections, setConnections] = useState([] as IConnection[])
-    const {getProfileUserId, getConnectionsByProfileId} = useContext(AppContext);
+    const [connections, setConnections] = useState([] as Array<any>);
+    const [chats, setChats] = useState([] as IChat[]);
+    const {getProfileUserId, getConnectionsByProfileId, currentUser, currentUserProfile, getChats} = useContext(AppContext);
 
     // SET USER PROFILE
     useEffect(()=>{
+       
         const user_id = 1;
-        getProfileUserId(user_id).then(resp => setProfileUser(resp));
+        getProfileUserId(currentUser.id).then(resp => setProfileUser(resp));
 
     }, []);
 
     // SET CONNECTIONS
-    useEffect(()=>{
+    /*useEffect(()=>{
         getConnectionsByProfileId(profileUser.id).then(resp => setConnections(resp));
+    });*/
+
+    useEffect(()=>{
+        let profileId = 0;
+        if(currentUserProfile){
+            profileId = currentUserProfile.id
+        }
+
+        getChats(profileId).then(resp => setChats(resp));
     })
 
-    console.log(connections);
+    console.log(currentUserProfile);
+    console.log(chats);
 
 
 
@@ -38,7 +53,8 @@ export const ChatPage = () =>{
                         <div className="main-user">
                             <img src="" alt="profile picture"></img>
                         </div>
-                        <p>{profileUser.name}</p>
+
+                        <p>{currentUserProfile?.name}</p>
                     </div>
                 </div>
 
@@ -47,35 +63,26 @@ export const ChatPage = () =>{
 
                 <div className="friends-container">
 
-                    {/*{chats.map(chat =>(
-                        <Conversation data={chat} currentUserId={user_id}/>
-                    ))}*/}
-
-                    {/*<a href="" style={{color: "black", textDecoration: "none"}}>
-
-                        <div className="friends">
-                            <div className="pic">
-                                <img src="" alt=""></img>
-                            </div>
-                            <div className="name">
-                                <h5>Vitoria do Capao</h5>
-                                <p>How are you doing today</p>
-                            </div>
-                            <div className="time_new_msg">
-                                <p>7:30am</p>
-                                <div className="msg">0</div>
-                            </div>
-                        </div>
-
-                </a>*/}
                     
-                    {connections.map((con)=> 
+                    {/*connections.length?connections.map((con)=> 
                         <Conversation data={con}/>
-                    )}
+                    ):
+                    <p>No connections found</p>
+                    
+                    
+                    */}
+
+                    {chats.length?chats.map(chat => <Chat data={chat} currentUserId={currentUser.id}/>): "No chats found"}
                 </div>
 
+                <Link to={"connections"}><div className="float">
+                    <div className="line"></div>
+                    <div className="line"></div>
+                    <div className="line"></div>
+                </div></Link>
+
                 <div className="footer">
-                    <div>
+                    <Link to={"/chat/users"}><div>
                         <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="26"
@@ -92,9 +99,9 @@ export const ChatPage = () =>{
                             d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z"
                         />
                         </svg>
-                    </div>
+                    </div></Link>
                 
-                    <div>
+                    <Link to={"/"} replace><div>
                         <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="26"
@@ -112,7 +119,7 @@ export const ChatPage = () =>{
                             d="M7.293 1.5a1 1 0 0 1 1.414 0l6.647 6.646a.5.5 0 0 1-.708.708L8 2.207 1.354 8.854a.5.5 0 1 1-.708-.708L7.293 1.5z"
                         />
                         </svg>
-                    </div>
+                    </div></Link>
                 
                     <div>
                         <svg
@@ -131,8 +138,12 @@ export const ChatPage = () =>{
                         />
                         </svg>
                     </div>
-                    </div>
-                        
+
+                   
+
+
+                    
+                    </div> 
 
 
             </div>

@@ -8,12 +8,13 @@ export const HomePage = () =>{
 
     const {getAllSiteType} = useContext(AppContext);
     const [allSite, setAllSite] = useState([] as ISiteType[]);
+    const {currentUser} = useContext(AppContext)
 
     useState(()=>{
         getAllSiteType().then(resp => setAllSite(resp));
     })
 
-    console.log(allSite);
+    console.log(currentUser);
     return(
         <div className="homepage">
             <h2>Home page</h2>

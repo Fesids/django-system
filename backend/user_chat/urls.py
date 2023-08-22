@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ProfileViewSet, ConnectionViewSet, ChatMessageViewSet
+from .views import ProfileViewSet, ConnectionViewSet, ChatMessageViewSet, ChatViewSet
 
 urlpatterns = [
 
@@ -21,6 +21,9 @@ urlpatterns = [
     path("connection/list/<int:profile>", ConnectionViewSet.as_view({
         "get": "getConnectionsByProfile"
     })),
+    path("connection/profile/<int:profileId>", ConnectionViewSet.as_view({
+        "get": "getConnectionByProfile"
+    })),
     path("connection/list", ConnectionViewSet.as_view({
         "get": "list"
     })),
@@ -28,6 +31,7 @@ urlpatterns = [
     path("connection/new/<int:profile_id>", ConnectionViewSet.as_view({
         "post": "save"
     })),
+
 
     path("profile/list", ProfileViewSet.as_view({
           'get': 'list'
@@ -42,7 +46,27 @@ urlpatterns = [
 
     path("profile/detail/<int:id>", ProfileViewSet.as_view({
         'get': 'getProfileById'
-    }))
+    })),
+
+    path("profile/<int:profileId>/friend/<int:friendId>", ProfileViewSet.as_view(
+        {
+            'post': 'addFriendToProfile'
+        }
+    )),
+
+
+    path("create/user_profile/<int:userProfileId>/other_profile/<int:otherProfileId>", ChatViewSet.as_view(
+        {
+            'post': 'createChat'
+        }
+    )),
+
+    path("all/profile/<int:userProfileId>", ChatViewSet.as_view(
+        {
+            "get": "getChatsByUserId"
+        }
+    ))
+
 
 
 ]

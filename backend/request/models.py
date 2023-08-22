@@ -26,6 +26,6 @@ class Request(models.Model):
     createdAt = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.pk
+        return self.subject
 
 

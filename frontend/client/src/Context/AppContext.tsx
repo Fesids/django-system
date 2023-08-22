@@ -11,15 +11,24 @@ import { IConnection } from "../Interfaces/Connection";
 import { IMessage } from "../Interfaces/Message";
 import { LoginResponse } from "../Interfaces/Auth/LoginResponse";
 import { any } from "prop-types";
+import { useNavigate } from "react-router";
+import { IChat } from "../Interfaces/Chat";
+import Cookie from 'js-cookie';
 
 interface AppContextProps{
 
     register(user:any): void,
+
     registerExternal(user:any): void,
     currentUser: null | any,
+    currentUserProfile: null | IProfile,
+    currentUserConnection: null | IConnection,
+
+    setCurrentUser :(user:any) =>void,
     getCookie():void,
-    login(e:any, user:any): Promise<LoginResponse>,
+    login(user:any): Promise<LoginResponse>,
     getUser(token:any): Promise<any>, 
+    getAllUsers(): Promise<IUser[]>,
     getDepartmentList(): Promise<IDepartment[]>,
     getDepartment(dept_id:number): Promise<IDepartment>,
     getUsersByDeptId(dept_id:string): Promise<IUser[]>,
@@ -48,6 +57,11 @@ interface AppContextProps{
     sendMessage(msg_body:Omit<IMessage, "id" | "seen">): Promise<IMessage>;
     getSentMessages(sender:number, receiver:number): Promise<IMessage[]>;
     
+    getChats(profileId:number): Promise<IChat[]>;
+    createChat(currentUserProfileId:number, otherProfileId:number): Promise<IChat>;
+
+    getConnectionDetailByProfileId(profileId:number): Promise<IConnection>;
+    addConnection(profileId:number, friendId:number): Promise<IConnection>;
 
 }
 
@@ -56,10 +70,41 @@ export const AppContext = createContext({} as AppContextProps);
 
 export const AppContextProvider = ({children}:React.PropsWithChildren)=>{
     const [currentUser, setCurrentUser] = useState<null | any>(JSON.parse(localStorage.getItem("currentuser") || "{}"));
-    const [user, setUser] = useState({} as IUser);
+    const [currentUserProfile, setCurrentUserProfile] = useState<IProfile>({} as IProfile);
+    const [currentUserConnection, setCurrentUserConnection] = useState({} as IConnection);
+    const [user, setUser] = useState({} as any);
     const [csrfToken, setCsrfToken] = useState("");
+    const [accessToken, setAccessToken] = useState("");
+   
+    
 
+    useEffect(()=>{
+        let profileId = 0;
+        if(currentUserProfile){
+            profileId = currentUserProfile.id;
+        }
+        axios.get("api/chat/connection/profile/"+currentUserProfile.id)
+        .then(resp => setCurrentUserConnection(resp.data));
 
+    })
+
+    useEffect(()=>{
+        let cc = 0;
+        if(currentUser){
+            cc = currentUser.id
+        }
+        axios.get("api/chat/profile/user/"+currentUser.id)
+        .then(resp => setCurrentUserProfile(resp.data));
+    })
+
+    const getAllUsers = async () =>{
+        try{
+            const resp = await axios.get("api/auth/list");
+            return resp.data;
+        }catch(err){
+            throw new Error("Failed to retrieve users");
+        }
+    }
     const getUser = async (token:any) =>{
         try{
             const resp = await axios.get("api/auth/user", {
@@ -69,14 +114,17 @@ export const AppContextProvider = ({children}:React.PropsWithChildren)=>{
                     "Authorization": `Bearer ${token}`
                 }
             });
-            localStorage.setItem("currentuser", JSON.stringify(resp.data))
-            setCurrentUser(resp.data);
+           
+            setUser(resp.data);
+            
             return resp.data;
 
         }catch(err){
-            throw new Error("Failed to retrive")
+            throw new Error("Failed to retrieve")
         }
     }
+
+
 
     const getCookie = async ()=>{
         try{
@@ -86,15 +134,8 @@ export const AppContextProvider = ({children}:React.PropsWithChildren)=>{
         }
     }
     const register = async (user:any)=>{
-        const config = {
-            headers:{
-                "X-CSRFToken":"3z3JF1JC3Mif7Shv22UoD7OVPTulyQFK"
-            },
-
-            withCredentials:true
-        }
         try{
-            const resp = await axios.post("api/auth/signup/", user, config);
+            const resp = await axios.post("api/auth/signup/", user);
         } catch(err:unknown){
             console.log(err);
         }
@@ -109,26 +150,39 @@ export const AppContextProvider = ({children}:React.PropsWithChildren)=>{
         }
     }
 
-    const login = async (e:any, user:any) =>{
-
-        e.preventDefault()
+    const login = async (user_body:any) =>{
+       
         try{
-            const resp = await axios.post("api/auth/login/", user,{
+            const resp = await axios.post("api/auth/login/", user_body,{
                 withCredentials:true,
                 headers:{
                     "Content-Type": "application/json"
                 }
             });
+           
             if(resp.headers["X-Csrftoken"]){
                 setCsrfToken(resp.headers["X-Csrftoken"])
             }
-            console.log("ain : "+csrfToken);
+            setAccessToken(resp.data.access_token);
+            Cookie.set("access_token", resp.data.access_token);
+            Cookie.set("refresh_token", resp.data.refresh_token);
+            
+
             return resp.data
             
         } catch(err){
             console.log(err)
         }
     }
+
+
+    useEffect(()=>{
+        getUser(accessToken)
+        .then(resp => {
+            setCurrentUser(resp), localStorage.setItem("currentuser", JSON.stringify(resp))});
+            
+    }, [accessToken]);
+
 
     const getDepartmentList = async () =>{
         const resp = await axios.get("api/department/list");
@@ -171,9 +225,7 @@ export const AppContextProvider = ({children}:React.PropsWithChildren)=>{
             throw new Error("site with id "+ id + " couldn't be retrieved");
         }
     }
-    useEffect(()=>{
-        localStorage.setItem("currentuser", JSON.stringify(user));
-    });
+    
 
     const searchUser = async (char:SearchQuery) =>{
         const resp = await axios.post("api/auth/search/user", char);
@@ -246,7 +298,7 @@ export const AppContextProvider = ({children}:React.PropsWithChildren)=>{
         .catch(resp => resp);
     }
 
-    const  updateDestIdAndSenderId = async (up_body:ISendRequest, request_id:number): Promise<IRequest>=>{
+    const updateDestIdAndSenderId = async (up_body:ISendRequest, request_id:number): Promise<IRequest>=>{
         try{
             const res = axios.put(`http://localhost:8087/api/request/update/request/${request_id}`);
             return (await res).data;
@@ -320,6 +372,42 @@ export const AppContextProvider = ({children}:React.PropsWithChildren)=>{
         }
     }
 
+    const getChats = async (profileId:number)=>{
+        try{
+            const resp = await axios.get("api/chat/all/profile/"+profileId);
+            return resp.data;
+        }catch(err){
+            throw new Error("Failed to retrieve chats");
+        }
+    }
+
+    const createChat = async (currentUserProfileId:number, otherProfileId:number) =>{
+        try{
+            const resp = await axios.post(`api/chat/create/user_profile/${currentUserProfileId}/other_profile/${otherProfileId}`);
+            return resp.data;
+        }catch(err){
+            throw new Error("Failed to create chat");
+        }
+    }
+
+    const getConnectionDetailByProfileId = async (profileId:number) =>{
+        try{
+            const resp = await axios.get("api/chat/connection/profile/"+profileId);
+            return resp.data;
+        }catch(err){
+            throw new Error("Failed to retrieve connection")
+        }
+    }
+
+    const addConnection = async (profileId:number, friendId:number) =>{
+        try{
+            const resp = await axios.post(`api/chat/profile/${profileId}/friend/${friendId}`);
+            return resp.data;
+        }catch(err){
+            throw new Error("failed to add connection")
+        }
+    }
+
 
     return(
 
@@ -328,7 +416,8 @@ export const AppContextProvider = ({children}:React.PropsWithChildren)=>{
             createRequestClient, getAllClientRequest, getReceivedRequests, getClientRequestDetail,getRequestDetail,
             createRequest, deleteClientRequest, deleteRequest, updateDestIdAndSenderId, getSentRequests,
             registerExternal, getCookie, getProfileUserId, getConnectionsByProfileId, getProfileDetail, getChatMessages,
-            sendMessage, getSentMessages, getUser, currentUser}}>
+            sendMessage, getSentMessages, getUser, currentUser, setCurrentUser, getChats, currentUserProfile, createChat,
+            getConnectionDetailByProfileId, currentUserConnection, addConnection, getAllUsers}}>
             {children}
         </AppContext.Provider>
     )

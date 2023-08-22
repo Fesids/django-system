@@ -4,8 +4,8 @@ from django.shortcuts import render, get_object_or_404, get_list_or_404
 from django.db.models import Q
 from rest_framework import views, viewsets, status, permissions, generics
 from rest_framework.response import Response
-from .serializers import ChatMessageSerializer, ProfileSerializer, ConnectionSerializer
-from .models import ChatMessage, Connection, Profile
+from .serializers import ChatMessageSerializer, ProfileSerializer, ConnectionSerializer, ChatSerializer
+from .models import ChatMessage, Connection, Profile, Chat
 from accounts.models import CustomUserModel
 
 # Create your views here.
@@ -29,7 +29,40 @@ class ChatMessageMixin(views.APIView):
     serializer_class = ChatMessageSerializer
 
 
+class ChatMixin(views.APIView):
+    permissions_classes = (permissions.AllowAny,)
+    queryset = Chat.objects.all()
+    serializer_class = ChatSerializer
+
+
 class ProfileViewSet(viewsets.ViewSet, ProfileMixin):
+
+    def getConnectionsByProfile(self, request, *args, **kwargs):
+        profileId = kwargs.get("profileId")
+
+        profile = self.queryset.get(id=profileId)
+
+        connections = profile.connections
+
+        serializer = self.serializer_class(connections)
+
+        return Response(serializer.data, status.HTTP_200_OK)
+
+    def addFriendToProfile(self, request, *args, **kwargs):
+        profile_id = kwargs.get("profileId")
+        friend_id = kwargs.get("friendId")
+
+        profile = self.queryset.get(id=profile_id)
+        connection_to_add = Connection.objects.all().get(id=friend_id)
+
+        if not profile:
+            return Response({"err": "profile not found"}, status.HTTP_404_NOT_FOUND)
+
+        profile.connections.add(connection_to_add)
+
+        serializer = self.serializer_class(profile)
+
+        return Response(serializer.data, status.HTTP_200_OK)
 
     def getProfileById(self, request, *args, **kwargs):
         profile_id = kwargs.get("id")
@@ -89,6 +122,16 @@ class ProfileViewSet(viewsets.ViewSet, ProfileMixin):
 
 class ConnectionViewSet(viewsets.ViewSet, ConnectionMixin):
 
+    def getConnectionByProfile(self, request, *args, **kwargs):
+        profileId = kwargs.get("profileId")
+
+        if not profileId:
+            return Response({"err": "No profile id provided"})
+
+        connection = get_object_or_404(Connection, profile=profileId)
+        serializer = self.serializer_class(connection)
+
+        return Response(serializer.data, status.HTTP_200_OK)
     def getConnectionsByProfile(self, request, *args, **kwargs):
             profile_id = kwargs.get("profile")
 
@@ -220,3 +263,40 @@ class ChatMessageViewSet(viewsets.ViewSet, ChatMessageMixin):
             return Response({"body": serializer.data}, status.HTTP_201_CREATED)
 
         return Response({"err": serializer.errors}, status.HTTP_400_BAD_REQUEST)
+
+
+class ChatViewSet(viewsets.ViewSet, ChatMixin):
+
+    def getChatsByUserId(self, request, *args, **kwargs):
+        user_profile_id = kwargs.get("userProfileId")
+        prof = get_object_or_404(Profile, id=user_profile_id)
+        chats = [x for x in Chat.objects.all() if x.members.contains(prof)]
+
+        if not len(chats):
+            return Response({"err":"No chats found"}, status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.serializer_class(chats, many=True)
+        return Response(serializer.data)
+
+
+
+    def createChat(self, request, *args, **kwargs):
+        user_profile_id = kwargs.get("userProfileId")
+        other_profile_id = kwargs.get("otherProfileId")
+
+        members_list = []
+
+        if user_profile_id and other_profile_id:
+            members_list.append(user_profile_id)
+            members_list.append(other_profile_id)
+
+        chat_body = {
+            "members": members_list
+        }
+
+        serializer = self.serializer_class(data=chat_body)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"body": serializer.data}, status.HTTP_200_OK)
+
+        return Response({"err": "Failed to create chat"}, status.HTTP_400_BAD_REQUEST)

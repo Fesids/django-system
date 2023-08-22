@@ -11,14 +11,14 @@ interface ReceivedRequestListProps{
 export const ReceivedRequestList = ({list, dept_name}:ReceivedRequestListProps) =>{
         
         return(
-            <div>
+            <div className="req-list-container">
                 {list.length?list.map(req => 
-                    <div><Link to={`/departments/${dept_name}/requests/${req.id}`}>{req.subject}</Link></div>
+                    <div key={req.id} className="req-container"><Link to={`/departments/${dept_name}/requests/${req.id}`} className="link">{req.subject}</Link></div>
                     )
                     
                     :
                     
-                    <div><p>No requests</p></div>
+                    <div className="no-request-message">No requests found</div>
                     
                 }
             </div>

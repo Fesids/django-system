@@ -32,13 +32,14 @@ export const MessageList = ({receivedMessages, senderId, sentMessages}:MessageLi
     let messagesList = receivedMessages;
     if(sentMessages){
         messagesList = receivedMessages.concat(sentMessages);
+        messagesList = messagesList.sort((a, b)=> a.id - b.id);
     }
 
     return(
         <div className="chat-box">
-            {messagesList.map((msg)=>(
+            {messagesList.length?messagesList.map((msg)=>(
                 <MessageContainer data={msg} senderId={senderId}/>
-            ))}
+            )): <p>No messages found</p>}
         </div>
     )
 }

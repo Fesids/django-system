@@ -10,10 +10,14 @@ class Profile(models.Model):
     user = models.OneToOneField(user, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     pic = models.ImageField(upload_to="uploads/profile", blank=True, null=True)
-    connections = models.ManyToManyField("Connection", related_name="my_connections", null=True)
+    connections = models.ManyToManyField("Connection", related_name="my_connections", blank=True)
 
     def __str__(self):
         return self.name
+
+
+class Chat(models.Model):
+    members = models.ManyToManyField("Profile", related_name="chat_members", blank=True)
 
 
 class Connection(models.Model):
@@ -21,6 +25,7 @@ class Connection(models.Model):
 
     def __str__(self):
         return self.profile.name
+
 
 
 class ChatMessage(models.Model):

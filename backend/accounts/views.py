@@ -80,10 +80,7 @@ class SignUpExternalUser(views.APIView):
 
                     else:
 
-                        depart = get_object_or_404(Department, id=1)
-                        if not depart:
-                            return Response({"err": f"department with id {id} not exist"})
-                        user = CustomUserModel.objects.create_external_user(username=username, password=password, email=email, dept=depart)
+                        user = CustomUserModel.objects.create_external_user(username=username, password=password, email=email)
 
                         return Response({"message": "user created successfully"}, status.HTTP_201_CREATED)
 
@@ -91,7 +88,7 @@ class SignUpExternalUser(views.APIView):
             return Response({"err": "failed to create user"}, status.HTTP_400_BAD_REQUEST)
 
 
-#@method_decorator(csrf_protect, name='dispatch')
+
 class SignupView(views.APIView):
 
     permission_classes = (permissions.AllowAny, )
@@ -173,9 +170,9 @@ class LoginView(views.APIView):
                     httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
                     samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
                 )
-                #response_user = get_object_or_404(CustomUserModel, email=username)
+
                 res.data = tokens
-                #print(response_user)
+
                 res["X-CSRFToken"] = csrf.get_token(request)
 
                 return res
@@ -186,54 +183,12 @@ class LoginView(views.APIView):
         except:
             return Response({"err": "something went wrong"}, status.HTTP_400_BAD_REQUEST)
 
-
-
-
-
-
-
-
-
-
-'''@method_decorator(csrf_protect, name='dispatch')
-class loginview(views.apiview):
-    permission_classes = (permissions.allowany,)
-
-    def post(self, request, format=none):
-        data = request.data
-
-        username = data["username"]
-        password = data["password"]
-
-        try:
-            user = auth.authenticate(username=username, password=password)
-
-            if user is not none:
-
-                tokens = get_user_token(user)
-                auth.login(request, user)
-                return response({"success": "user authenticated"}, status.http_200_ok).set_cookie(
-                    key= settings.simple_jwt['auth_cookie'],
-                    value= tokens["access_token"],
-                    expires=settings.simple_jwt['access_token_lifetime'],
-                    secure= settings.simple_jwt['auth_cookie_secure'],
-                    httponly= settings.simple_jwt['auth_cookie_http_only'],
-                    samesite= settings.simple_jwt['auth_cookie_samesite']
-                )
-
-            else:
-                return response({"err": "error when trying to authenticating"}, status.http_400_bad_request)
-
-        except:
-            return response({"err": "something went wrong"}, status.http_400_bad_request)
-
-'''
 @method_decorator(ensure_csrf_cookie, name='dispatch')
 class GetCSRFToken(views.APIView):
     permission_classes = (permissions.AllowAny, )
 
     def get(self, request, format=None):
-        return Response({'success': "jui"}, status.HTTP_200_OK)
+        return Response({'success': " "}, status.HTTP_200_OK)
 
 
 class checkauthenticatedview(views.APIView):
@@ -291,7 +246,7 @@ def user(request):
 
     except:
 
-        return Response({"err": "queeeee isssss"}, status.HTTP_400_BAD_REQUEST)
+        return Response({"err": "Failed to retrieve user"}, status.HTTP_400_BAD_REQUEST)
 
     serializer = UserSerializer(user)
 
@@ -314,8 +269,7 @@ class UpdateUser(views.APIView):
     id = None
     user = None
     serializer_class = UserSerializer
-    #permission_classes = (permissions.isauthenticated, permissions.isadminuser )
-    #### permission_classes = (updateuserpermission, )
+
 
     def dispatch(self, request, *args, **kwargs):
         self.id = kwargs.get("id")
@@ -326,12 +280,7 @@ class UpdateUser(views.APIView):
         if not self.user:
             return Response({"message": "account not found"}, status.HTTP_400_BAD_REQUEST)
 
-        '''updatebody = {
-            "username": request.data["username"],
-            "email": request.data["email"],
-            "first_name": request.data["first_name"],
-            "last_name": request.data["last_name"]
-        }'''
+
 
         serializer = UserSerializer(instance=self.user, data=request.data, partial=True)
 
@@ -379,7 +328,7 @@ class GetAllUserByDepartment(views.APIView):
 
     def dispatch(self, request, *args, **kwargs):
         self.dept_id = kwargs.get("dept_id")
-        #self.users = customusermodel.objects.filter(department=self.dept_id)
+
         self.users = CustomUserModel.objects.filter(department=self.dept_id)
         return super(GetAllUserByDepartment, self).dispatch(request, self.dept_id)
 

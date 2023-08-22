@@ -11,7 +11,7 @@ export const CreateRequestPage = () =>{
 
 
     const [departments, setDepartments] = useState([] as IDepartment[]);
-    const {getDepartmentList, createRequest} = useContext(AppContext);
+    const {getDepartmentList, createRequest, currentUser} = useContext(AppContext);
     const {dept_id} = useParams();
     const [createBody, setCreateBody] = useState({} as Omit<ICreateRequest, "sender_dept_id">);
     const [img, setImg] = useState("");
@@ -39,15 +39,14 @@ export const CreateRequestPage = () =>{
         if(dept_id){
             send_dept_id = parseInt(dept_id);
         }
-        const b = {
-            user_sender: 1,
-            sender_dept_id: send_dept_id,
-            ...createBody
+        
+        let cc = 0;
+        if(currentUser){
+            cc = currentUser.id;
         }
-
-        const user_sender = 1;
+        const user_sender = cc;
         const formData = new FormData;
-        formData.append("user_sender", user_sender.toString());
+        formData.append("user_sender", cc.toString());
         formData.append("sender_dept_id", send_dept_id.toString());
         formData.append("destination_dept_id", createBody.destination_dept_id.toString());
         formData.append("subject", createBody.subject);
@@ -56,34 +55,46 @@ export const CreateRequestPage = () =>{
         createRequest(formData);
     }
 
+    console.log(currentUser)
     return(
-        <div>
-            <p>Create a new Request {dept_id}</p>
-            <form onSubmit={(e)=> handleCreateRequest(e)}>
-
-                <div className="form-group">
-                    <label htmlFor="request_img" className="form-label mt-3">IMAGE : </label>
-                    <input name="request_img" className="form-control" id="request" type="file" onChange={(e:any)=> setImg(e.target.files[0])}></input>
+        <div className="create-request-container">
+            <div className="create-request">
+               
+                <div className="header">
+                    <h3>Create a new Request</h3>
                 </div>
 
-                <div className="form-group">
-                    <select onChange={(e)=> handleOnChange(e)} name="destination_dept_id" /*defaultValue={departments[0].id}*/>
-                        {departments.map(dept => <option value={dept.id}>{dept.department_name}</option>)}
-                    </select>
-                    {/*<Select options={departments} defaultValue={departments[0]} name="destination_dept_id" onChange={(e)=> handleOnChange(e)}></Select>*/}
+                
+                <form onSubmit={(e)=> handleCreateRequest(e)}>
 
-                </div>
-                <div className="form-group">
-                    <label htmlFor="subject" className="form-label mt-3">SUBJECT : </label>
-                    <input name="subject" className="form-control" id="subject" onChange={(e)=> handleOnChange(e)}></input>
-                </div>
-                <div className="form-group">
-                    <label htmlFor="body" className="form-label mt-3">BODY : </label>
-                    <input name="body" className="form-control" id="body" onChange={(e)=> handleOnChange(e)}></input>
-                </div>
-                <input type="submit" value={"send"}></input>
-            </form>
+                    <div className="form-group">
+                        <label htmlFor="request_img" className="form-label mt-3">IMAGE : </label>
+                        <input name="request_img" className="form-control" id="request" type="file" onChange={(e:any)=> setImg(e.target.files[0])}></input>
+                    </div>
+
+                    <div className="form-group">
+                        <select onChange={(e)=> handleOnChange(e)} name="destination_dept_id" /*defaultValue={departments[0].id}*/>
+                            {departments.map(dept => <option value={dept.id}>{dept.department_name}</option>)}
+                        </select>
+                        {/*<Select options={departments} defaultValue={departments[0]} name="destination_dept_id" onChange={(e)=> handleOnChange(e)}></Select>*/}
+
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="subject" className="form-label mt-3">SUBJECT : </label>
+                        <input name="subject" className="form-control" id="subject" onChange={(e)=> handleOnChange(e)}></input>
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="body" className="form-label mt-3">BODY : </label>
+                        <input name="body" className="form-control" id="body" onChange={(e)=> handleOnChange(e)}></input>
+                    </div>
+                    <input type="submit" value={"send"} className="btn-submit"></input>
+                </form>
+
+             
+                
+            </div>
         </div>
+        
     )
 
 }

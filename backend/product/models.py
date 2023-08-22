@@ -16,15 +16,11 @@ class SiteType(str, enum.Enum):
 
 class Product(models.Model):
 
-    #product_name = models.CharField(max_length=244, null=True)
     description = models.CharField(max_length=244)
     body = models.CharField(max_length=244, default=" ")
     siteType = models.CharField(_("site_type_name"), max_length=64, choices=SiteType.choices(), unique=True)
     createdAt = models.DateTimeField(auto_now_add=True)
-    '''product_img = models.ImageField(upload_to="uploads/product", blank=True, null=True, default=' ')
-    price = models.FloatField()
-    createdAt = models.DateTimeField(auto_now_add=True)
-    updatedAt = models.DateTimeField(auto_now=True)'''
+
 
     class Meta:
         ordering = ('createdAt',)

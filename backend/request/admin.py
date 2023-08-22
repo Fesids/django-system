@@ -5,7 +5,7 @@ from .models import Request, SalesRequest
 
 @admin.register(SalesRequest)
 class SalesRequestAdmin(admin.ModelAdmin):
-    fields = ["destination_dept_id", "subject", "body", "client_email", "createdAt"]
+    fields = ["destination_dept_id", "subject", "body", "client_email"]
 
 
 @admin.register(Request)

@@ -10,11 +10,11 @@ interface ISentRequestListProps{
 export const SentRequestList = ({list, dept_name}:ISentRequestListProps) =>{
 
     return(
-        <div>
+        <div className="req-list-container">
             {list.length?list.map(req =>
-                <div>
-                     <div><Link to={`/departments/${dept_name}/requests/${req.id}`}>{req.subject}</Link></div>
-                </div>
+                
+                    <div className="req-container"><Link to={`/departments/${dept_name}/requests/${req.id}`} className="link">{req.subject}</Link></div>
+                
                     )
                     
                     :

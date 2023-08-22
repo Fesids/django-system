@@ -5,4 +5,4 @@ from .models import Product
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    fields = ['product_name', 'description', 'product_img', 'price']
+    fields = ['body', 'description', 'siteType']

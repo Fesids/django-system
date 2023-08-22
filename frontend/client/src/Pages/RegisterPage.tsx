@@ -43,35 +43,42 @@ export const RegisterPage = () =>{
 
 
     return(
-        <div className="create-user-form">
-            <button onClick={getCookie}>TESTE COOKIE</button>
-            <h2 className="mt-2 mb-2">Register</h2>
-            <p>Enter your credentials</p>
-            <form method="post" onSubmit={(e) => Register(e, regBody)}>
-                <div className="form-group">
-                    <label htmlFor="username" className="form-label mt-3">USERNAME : </label>
-                    <input name="username" className="form-control" id="username" onChange={(e)=> handleChange(e)}></input>
+        <div className="auth-container">
+            <div className="create-user-form">
+           
+                <div className="auth-header">
+                    <h2 className="mt-2 mb-2">Register</h2>
+                    <p>Enter your credentials</p>
                 </div>
 
-                <div className="form-group">
-                    <label htmlFor="email" className="form-label mt-3">EMAIL : </label>
-                    <input name="email" className="form-control" id="email" onChange={(e)=> handleChange(e)}></input>
-                </div>
 
-                <div className="form-group">
-                    <label htmlFor="password" className="form-label mt-3">PASSWORD : </label>
-                    <input name="password" className="form-control" id="password" onChange={(e)=> handleChange(e)}></input>
-                </div>
+                <form method="post" onSubmit={(e) => Register(e, regBody)}>
+                    <div className="form-group">
+                        <label htmlFor="username" className="form-label mt-3">USERNAME : </label>
+                        <input name="username" className="form-control" id="username" onChange={(e)=> handleChange(e)}></input>
+                    </div>
 
-                <div className="form-group">
-                    <label htmlFor="re_password" className="form-label mt-3">RE_PASSWORD : </label>
-                    <input name="re_password" className="form-control" id="password" onChange={(e)=> handleChange(e)}></input>
-                </div>
+                    <div className="form-group">
+                        <label htmlFor="email" className="form-label mt-3">EMAIL : </label>
+                        <input name="email" className="form-control" id="email" onChange={(e)=> handleChange(e)}></input>
+                    </div>
 
-                <input type="submit" value={"register"}></input>
-            </form>
+                    <div className="form-group">
+                        <label htmlFor="password" className="form-label mt-3">PASSWORD : </label>
+                        <input name="password" className="form-control" id="password" onChange={(e)=> handleChange(e)}></input>
+                    </div>
 
-            <input type="hidden" value={"3z3JF1JC3Mif7Shv22UoD7OVPTulyQFK"} name="csrfmiddlewaretoken"/>
+                    <div className="form-group">
+                        <label htmlFor="re_password" className="form-label mt-3">RE_PASSWORD : </label>
+                        <input name="re_password" className="form-control" id="password" onChange={(e)=> handleChange(e)}></input>
+                    </div>
+
+                    <input type="submit" value={"register"} className="btn-submit-auth"></input>
+                </form>
+
+                
+            </div>
         </div>
+        
     )
 }

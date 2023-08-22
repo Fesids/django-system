@@ -6,6 +6,7 @@ import { IRequestClient } from "../Interfaces/RequestClient";
 export const ClientRequesDetailPage = () =>{
 
     const {id, dept_name} = useParams();
+    const [showMore, setShowMore] = useState(false);
     const {getClientRequestDetail, createRequest, deleteClientRequest} = useContext(AppContext);
 
     const [clientRequest, setClientRequest] = useState({} as IRequestClient);
@@ -37,18 +38,31 @@ export const ClientRequesDetailPage = () =>{
 
     }
 
-    return(
-        <div className="client-request-detail">
-            
-            <p>body {clientRequest.body}</p>
-            <p>subject {clientRequest.subject}</p>
-            <p>client email : {clientRequest.client_email}</p>
-            <p>created at {clientRequest.createdAt}</p>
+    let body = ""
+    if(clientRequest.body){
+        body = clientRequest.body
+    }
 
-            <div className="buttons-container">
-                <button className="btn btn-danger">reject</button>
-                <button className="btn btn-success" onClick={(e)=>sendToAnalise(e)}>send to analisys</button>
+
+    return(
+        <div className="request-detail-container">
+            <div className="request-detail">
+                
+               
+                <p className="subject">subject {clientRequest.subject}</p>
+                <div className="request-body">
+                    {showMore?body: body.substring(0, 100)} <p onClick={()=> setShowMore(!showMore)}>{!showMore?"show more":"show less"}</p>
+
+                </div>
+                <p>client email : {clientRequest.client_email}</p>
+                <p>created at {clientRequest.createdAt}</p>
+
+                <div className="buttons-container">
+                    <button className="btn btn-outline-danger">reject</button>
+                    <button className="btn btn-outline-success btn-analysis" onClick={(e)=>sendToAnalise(e)}>send to analisys</button>
+                </div>
             </div>
+
         </div>
     )
 }

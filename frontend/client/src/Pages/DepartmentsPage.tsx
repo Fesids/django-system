@@ -13,7 +13,7 @@ export const DepartmentPage = () =>{
     useEffect(()=>{
         getDepartmentList().then(resp => setDepartments(resp));
 
-    }, []);
+    });
 
     console.log(departments);
 
@@ -38,7 +38,7 @@ export const DepartmentPage = () =>{
                         )}
                     </tbody>
                 </table>
-              {/*{departments.map(dep => <DepartmentComp {...dep} key={dep.id}/>)}*/}
+             
             </div>
         </div>
     )
